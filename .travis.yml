@@ -1,0 +1,8 @@
+language: c
+
+install:
+    - make env
+
+script:
+    - make test
+    - make qa

@@ -1,11 +1,12 @@
 local request = require 'http.functional.request'
 local writer = require 'http.functional.response'
 
-local app = require 'app'
+local insulate, it, assert = insulate, it, assert
 
-local describe, it, assert = describe, it, assert
+insulate('app hello', function()
+	package.loaded['resty.websocket.server'] = {}
+	local app = require 'app'
 
-describe('app hello', function()
 	it('responds with hello', function()
     local w, req = writer.new(), request.new()
     app(w, req)

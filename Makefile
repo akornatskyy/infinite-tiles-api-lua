@@ -19,7 +19,7 @@ clean:
 
 env: luarocks
 	for rock in lbase64 luaossl luasocket struct utf8 \
-			busted luacov luacheck ; do \
+			lua-messagepack busted luacov luacheck ; do \
 		$(ENV)/bin/luarocks --deps-mode=one install $$rock ; \
 	done ; \
 	$(ENV)/bin/luarocks install --server=http://luarocks.org/dev lucid
@@ -73,12 +73,26 @@ nginx:
 	mkdir -p lua-nginx-module lua-resty-websocket && \
 	wget -c https://github.com/openresty/lua-nginx-module/archive/$(NGINX_LUA_MODULE_VERSION).tar.gz \
 		-O - | tar -xzC lua-nginx-module --strip-components=1 && \
+	wget -c https://github.com/openresty/lua-resty-websocket/archive/v0.06.tar.gz \
+		-O - | tar -xzC lua-resty-websocket --strip-components=1 && \
+	\
+	for lib in lua-resty-websocket/lib ; do \
+		for f in $$(cd $$lib ; find ./ -name '*.lua') ; do \
+			f=$$(echo $$f | sed -r 's/.\///') ; \
+			if=$$(echo $$f | tr '/' '_') ; \
+			cp $$lib/$$f $$if ; \
+			of=$$(echo $$if | sed -r 's/.lua/.o/') ; \
+			$(ENV)/bin/lua -b $$if $$of ; \
+		done \
+	done ; \
+	ar rcs libextra.a *.o ; \
 	\
 	export LUAJIT_LIB=$(ENV)/lib && \
 	export LUAJIT_INC=$(ENV)/include ; \
 	./configure --prefix=$(ENV) --without-http_rewrite_module --without-pcre \
 		--with-http_stub_status_module \
-		--add-module=./lua-nginx-module ; \
+		--add-module=./lua-nginx-module \
+		--with-ld-opt="-L./ -Wl,--whole-archive -lextra -Wl,--no-whole-archive" ; \
 	make -j4 ; \
 	cd .. && \
 	cp nginx/objs/nginx bin/ && \

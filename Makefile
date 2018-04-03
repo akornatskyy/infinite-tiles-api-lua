@@ -1,5 +1,5 @@
-.SILENT: clean env test qa run debian rm lua luajit luarocks nginx
-.PHONY: clean env test qa run debian rm lua luajit luarocks nginx
+.SILENT: clean env test qa run debian rm luajit luarocks nginx
+.PHONY: clean env test qa run debian rm luajit luarocks nginx
 
 ENV=$(shell pwd)/env
 LUA_VERSION=2.1.0-beta3
@@ -19,7 +19,7 @@ clean:
 
 env: luarocks
 	for rock in lbase64 luaossl luasocket struct utf8 \
-			lua-messagepack busted luacov luacheck ; do \
+			lua-messagepack busted luacov luacheck redis-lua ; do \
 		$(ENV)/bin/luarocks --deps-mode=one install $$rock ; \
 	done ; \
 	$(ENV)/bin/luarocks install --server=http://luarocks.org/dev lucid
@@ -70,13 +70,15 @@ nginx:
 		-O - | tar -xzC nginx --strip-components=1 && \
 	\
 	cd nginx && \
-	mkdir -p lua-nginx-module lua-resty-websocket && \
+	mkdir -p lua-nginx-module lua-resty-websocket lua-resty-redis && \
 	wget -c https://github.com/openresty/lua-nginx-module/archive/$(NGINX_LUA_MODULE_VERSION).tar.gz \
 		-O - | tar -xzC lua-nginx-module --strip-components=1 && \
 	wget -c https://github.com/openresty/lua-resty-websocket/archive/v0.06.tar.gz \
 		-O - | tar -xzC lua-resty-websocket --strip-components=1 && \
+	wget -c https://github.com/openresty/lua-resty-redis/archive/v0.26.tar.gz \
+		-O - | tar -xzC lua-resty-redis --strip-components=1 && \
 	\
-	for lib in lua-resty-websocket/lib ; do \
+	for lib in lua-resty-websocket/lib lua-resty-redis/lib ; do \
 		for f in $$(cd $$lib ; find ./ -name '*.lua') ; do \
 			f=$$(echo $$f | sed -r 's/.\///') ; \
 			if=$$(echo $$f | tr '/' '_') ; \

@@ -1,4 +1,7 @@
 local protocol = require 'protocol'
+local tableext = require 'tableext'
+
+local table_prefix = tableext.prefix
 
 local Client = {}
 
@@ -6,8 +9,24 @@ function Client:send(packet)
   self.ws:send_binary(protocol.encode(packet))
 end
 
+function Client:publish(area, packet)
+  self.redis:publish('AREA:' .. area, protocol.encode(packet))
+end
+
+function Client:subscribe(areas)
+  self.subscription:subscribe(unpack(table_prefix(areas, 'AREA:')))
+end
+
+function Client:unsubscribe(areas)
+  self.subscription:unsubscribe(unpack(table_prefix(areas, 'AREA:')))
+end
+
+--
+
+local Metatable = {__index = Client}
+
 local function new(options)
-  return setmetatable(options, {__index = Client})
+  return setmetatable(options, Metatable)
 end
 
 return {

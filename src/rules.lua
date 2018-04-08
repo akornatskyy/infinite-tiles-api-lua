@@ -21,6 +21,16 @@ local function allowed_keys(t)
   return setmetatable({allowed = allowed}, AllowedKeys)
 end
 
+local number = {
+  validate = function(self, value, model)
+    if not value or type(value) ~= 'number' then
+      return 'Must be an integer value.'
+    end
+    return nil
+  end
+}
+
 return {
-  allowed_keys = allowed_keys
+  allowed_keys = allowed_keys,
+  number = number
 }

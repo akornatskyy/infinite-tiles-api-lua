@@ -5,6 +5,7 @@ local insulate, it, assert = insulate, it, assert
 
 insulate('app hello', function()
 	package.loaded['resty.websocket.server'] = {}
+	package.loaded['resty.redis'] = {}
 	local app = require 'app'
 
 	it('responds with hello', function()

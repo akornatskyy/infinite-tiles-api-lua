@@ -1,7 +1,7 @@
 std = 'luajit'
 cache = true
 codes = true
-globals = {'_ENV'}
+globals = {'_ENV', 'ngx'}
 files['spec/'].read_globals = {
   'before_each', 'describe', 'insulate', 'it', 'after_each'
 }

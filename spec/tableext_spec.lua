@@ -25,4 +25,23 @@ describe('tableext', function()
       assert.same({'prefix:k1', 'prefix:k2'}, r)
     end)
   end)
+
+  describe('add unique', function()
+    it('add only unique elements', function()
+      local cases = {
+        {{}, {}, {}},
+        {{'a'}, {'a'}, {}},
+        {{'b'}, {}, {'b'}},
+        {{'c'}, {'c'}, {'c'}},
+        {{'d'}, {}, {'d', 'd'}},
+        {{'a', 'b', 'c'}, {}, {'a', 'a', 'b', 'b', 'c'}},
+        {{'a', 'b', 'c', 'd'}, {'a', 'b'}, {'a', 'a', 'b', 'b', 'c', 'd', 'd'}}
+      }
+      for _, args in next, cases do
+        local expected, t1, t2 = unpack(args)
+        tableext.add_unique(t1, t2)
+        assert.same(expected, t1)
+      end
+    end)
+  end)
 end)

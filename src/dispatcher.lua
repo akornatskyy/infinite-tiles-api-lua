@@ -1,10 +1,25 @@
-local pretty = require 'core.pretty'
+local base64 = require 'core.encoding.base64'
 local i18n = require 'core.i18n'
+local pretty = require 'core.pretty'
+local rand = require 'security.crypto.rand'
 
-local protocol = require 'protocol'
-local validators = require 'validators'
-local repository = require 'repository'
+local area = require 'area'
 local client = require 'client'
+local protocol = require 'protocol'
+local repository = require 'repository'
+local tableext = require 'tableext'
+local validators = require 'validators'
+
+local area_cell_offset = area.cell_offset
+local area_code_from_tile = area.code_from_tile
+local area_codes = area.codes
+local base64_encode, rand_bytes = base64.encode, rand.bytes
+local table_sub = tableext.sub
+local time, unpack = os.time, unpack
+
+local function newid()
+  return base64_encode(rand_bytes(12))
+end
 
 local Dispatcher = {}
 
@@ -46,7 +61,7 @@ function Dispatcher:send_errors(errors)
 end
 
 function Dispatcher:tiles(p)
-  local xmin, ymin = unpack(p.area)
+  local xmin, ymin, xmax, ymax = unpack(p.area)
   if p.coords then
     self.c:send {
       t = 'tiles',
@@ -54,13 +69,104 @@ function Dispatcher:tiles(p)
       data = self.r:tiles(xmin, ymin, p.coords)
     }
   end
+  local codes = area_codes(xmin, ymin, xmax, ymax)
+  local t = table_sub(codes, self.area_codes)
+  if #t > 0 then
+    self:send_objects(t)
+    self.c:subscribe(t)
+  end
+  t = table_sub(self.area_codes, codes)
+  if #t > 0 then
+    self.c:unsubscribe(t)
+    self:send_removed(t)
+  end
+  self.area_codes = codes
 end
 
-local function new(ws)
-  return setmetatable({
-    c = client.new {ws = ws},
-    r = repository.new {}
-  }, {__index = Dispatcher})
+function Dispatcher:place(p)
+  local x, y = p.x, p.y
+  local area_code = area_code_from_tile(x, y)
+  local cell = area_cell_offset(x, y)
+  if not self.r:mark_area_cell(area_code, cell, 1) then
+    return
+  end
+  local id = newid()
+  local lifetime = time() + rand.uniform(10) + 10
+  self.r:add_lifetime(id, lifetime)
+  self.r:add_area_object_id(area_code, id)
+  self.r:add_object(
+    id,
+    {
+      x = x,
+      y = y,
+      area = area_code,
+      cell = cell
+    }
+  )
+  self.c:publish(
+    area_code,
+    {
+      t = 'place',
+      objects = {
+        {
+          id = id,
+          x = x,
+          y = y
+        }
+      }
+    }
+  )
+end
+
+-- Internal details
+
+function Dispatcher:send_objects(areas)
+  local object_ids = self.r:all_areas_object_ids(areas)
+  if #object_ids == 0 then
+    return
+  end
+  local t = self.r:all_objects(object_ids)
+  if #t == 0 then
+    return
+  end
+  for i = 1, #t do
+    local o = t[i]
+    t[i] = {
+      id = o.id,
+      x = o.x,
+      y = o.y
+    }
+  end
+  self.c:send {
+    t = 'place',
+    objects = t
+  }
+end
+
+function Dispatcher:send_removed(areas)
+  local t = self.r:all_areas_object_ids(areas)
+  if #t == 0 then
+    return
+  end
+  self.c:send {
+    t = 'remove',
+    objects = t
+  }
+end
+
+--
+
+local Metatable = {__index = Dispatcher}
+
+local function new(ws, redis, subscription)
+  return setmetatable(
+    {
+      area_codes = {},
+      c = client.new {ws = ws, redis = redis, subscription = subscription},
+      r = repository.new {redis = redis}
+    },
+    Metatable
+  )
 end
 
 return {

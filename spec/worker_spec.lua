@@ -34,5 +34,16 @@ describe('worker', function()
 
       assert.is_false(f {'123'})
     end)
+
+    it('clean ups if object is not available', function()
+      setup_redis {
+        {{'set', 'LOCK:LIFETIME:123', '', 'EX', '1', 'NX'}, true},
+        {{'get', 'OBJECT:123'}},
+        {{'zrem', 'LIFETIME', '123'}},
+        {{'del', 'LOCK:LIFETIME:123'}}
+      }
+
+      assert.is_true(f {'123'})
+    end)
   end)
 end)

@@ -4,9 +4,7 @@ local pretty = require 'core.pretty'
 local rand = require 'security.crypto.rand'
 
 local area = require 'area'
-local client = require 'client'
 local protocol = require 'protocol'
-local repository = require 'repository'
 local tableext = require 'tableext'
 local validators = require 'validators'
 
@@ -18,7 +16,7 @@ local table_sub = tableext.sub
 local time, unpack = os.time, unpack
 
 local function newid()
-  return base64_encode(rand_bytes(12))
+  return base64_encode(rand_bytes(6))
 end
 
 local Dispatcher = {}
@@ -154,16 +152,20 @@ function Dispatcher:send_removed(areas)
   }
 end
 
+function Dispatcher:close()
+  return self.r:close()
+end
+
 --
 
 local Metatable = {__index = Dispatcher}
 
-local function new(ws, redis, subscription)
+local function new(client, repository)
   return setmetatable(
     {
-      area_codes = {},
-      c = client.new {ws = ws, redis = redis, subscription = subscription},
-      r = repository.new {redis = redis}
+      c = client,
+      r = repository,
+      area_codes = {}
     },
     Metatable
   )

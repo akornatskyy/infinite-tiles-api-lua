@@ -25,8 +25,15 @@ end
 
 local Metatable = {__index = Client}
 
-local function new(options)
-  return setmetatable(options, Metatable)
+local function new(ws, redis, subscription)
+  return setmetatable(
+    {
+      ws = ws,
+      redis = redis,
+      subscription = subscription
+    },
+    Metatable
+  )
 end
 
 return {

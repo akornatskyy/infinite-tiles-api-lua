@@ -85,12 +85,16 @@ function Repository:all_areas_id(prefix, areas)
   return r
 end
 
+function Repository:close()
+  return self.redis:close()
+end
+
 --
 
 local Metatable = {__index = Repository}
 
-local function new(options)
-  return setmetatable(options, Metatable)
+local function new(redis)
+  return setmetatable({redis = redis}, Metatable)
 end
 
 return {

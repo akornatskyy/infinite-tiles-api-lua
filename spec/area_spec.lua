@@ -80,4 +80,20 @@ describe('area', function()
       end
     end)
   end)
+
+  describe('codes_sub', function()
+    it('returns area codes from t1 not present in t2', function()
+      local cases = {
+        {{}, {}, {}},
+        {{'a'}, {a = 1}, {}},
+        {{}, {}, {a = 1}},
+        {{'a'}, {a = 1, b = 1}, {b = 1, c = 1}}
+      }
+      for _, args in next, cases do
+        local expected, t1, t2 = unpack(args)
+        local r = area.codes_sub(t1, t2)
+        assert.same(expected, r)
+      end
+    end)
+  end)
 end)

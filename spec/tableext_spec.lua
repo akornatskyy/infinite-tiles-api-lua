@@ -3,22 +3,6 @@ local tableext = require 'tableext'
 local describe, it, assert = describe, it, assert
 
 describe('tableext', function()
-  describe('sub', function()
-    it('returns keys from t1 not present in t2', function()
-      local cases = {
-        {{}, {}, {}},
-        {{'a'}, {a = 1}, {}},
-        {{}, {}, {a = 1}},
-        {{'a'}, {a = 1, b = 1}, {b = 1, c = 1}}
-      }
-      for _, args in next, cases do
-        local expected, t1, t2 = unpack(args)
-        local r = tableext.sub(t1, t2)
-        assert.same(expected, r)
-      end
-    end)
-  end)
-
   describe('prefix', function()
     it('returns a table with all elements prefixed', function()
       local r = tableext.prefix({'k1', 'k2'}, 'prefix:')
@@ -40,6 +24,26 @@ describe('tableext', function()
       for _, args in next, cases do
         local expected, t1, t2 = unpack(args)
         tableext.add_unique(t1, t2)
+        assert.same(expected, t1)
+      end
+    end)
+  end)
+
+  describe('subtract tables', function()
+    it('removes elements from t1 which are in t2.', function()
+      local cases = {
+        {{}, {}, {}},
+        {{'a'}, {'a'}, {}},
+        {{'a'}, {'a'}, {'b'}},
+        {{'a'}, {'a', 'b'}, {'b', 'c'}},
+        {{}, {}, {'b'}},
+        {{}, {'c'}, {'c'}},
+        {{}, {}, {'d', 'd'}},
+        {{}, {'a', 'c'}, {'a', 'b', 'c', 'd'}}
+      }
+      for _, args in next, cases do
+        local expected, t1, t2 = unpack(args)
+        tableext.sub(t1, t2)
         assert.same(expected, t1)
       end
     end)

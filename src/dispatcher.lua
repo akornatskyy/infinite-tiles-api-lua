@@ -11,6 +11,7 @@ local validators = require 'validators'
 local area_cell_offset = area.cell_offset
 local area_code_from_tile = area.code_from_tile
 local area_codes = area.codes
+local area_codes_sub = area.codes_sub
 local base64_encode, rand_bytes = base64.encode, rand.bytes
 local table_sub = tableext.sub
 local time, unpack = os.time, unpack
@@ -68,15 +69,19 @@ function Dispatcher:tiles(p)
     }
   end
   local codes = area_codes(xmin, ymin, xmax, ymax)
-  local t = table_sub(codes, self.area_codes)
+  local t = area_codes_sub(codes, self.area_codes)
+  local object_ids
   if #t > 0 then
-    self:send_objects(t)
+    object_ids = self.r:all_areas_object_ids(t)
+    self:send_objects(object_ids)
     self.c:subscribe(t)
+  else
+    object_ids = {}
   end
-  t = table_sub(self.area_codes, codes)
+  t = area_codes_sub(self.area_codes, codes)
   if #t > 0 then
     self.c:unsubscribe(t)
-    self:send_removed(t)
+    self:send_removed(table_sub(self.r:all_areas_object_ids(t), object_ids))
   end
   self.area_codes = codes
 end
@@ -118,8 +123,7 @@ end
 
 -- Internal details
 
-function Dispatcher:send_objects(areas)
-  local object_ids = self.r:all_areas_object_ids(areas)
+function Dispatcher:send_objects(object_ids)
   if #object_ids == 0 then
     return
   end
@@ -141,14 +145,13 @@ function Dispatcher:send_objects(areas)
   }
 end
 
-function Dispatcher:send_removed(areas)
-  local t = self.r:all_areas_object_ids(areas)
-  if #t == 0 then
+function Dispatcher:send_removed(object_ids)
+  if #object_ids == 0 then
     return
   end
   self.c:send {
     t = 'remove',
-    objects = t
+    objects = object_ids
   }
 end
 

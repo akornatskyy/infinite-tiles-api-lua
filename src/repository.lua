@@ -65,8 +65,35 @@ end
 
 -- AREA CELL
 
+local mark_area_cell_script = nil
+
 function Repository:mark_area_cell(area, cell, value)
-  return self.redis:setbit('A:CELLS:' .. area, cell, value) ~= value
+  if not mark_area_cell_script then
+    mark_area_cell_script =
+      assert(
+      self.redis:script(
+        'load',
+        [[
+          local key = KEYS[1]
+          local offset = ARGV[1]
+          local value = tonumber(ARGV[2])
+          local mark = redis.call('getbit', key, offset)
+          if mark == value then
+            return false
+          end
+          redis.call('setbit', key, offset, value)
+          return true
+        ]]
+      )
+    )
+  end
+  return self.redis:evalsha(
+    mark_area_cell_script,
+    '1',
+    'A:CELLS:' .. area,
+    cell,
+    value
+  )
 end
 
 -- Internal details

@@ -26,15 +26,11 @@ function Dispatcher:dispatch(message)
   local packet = protocol.decode(message)
   local packet_type = packet.t
   if not packet_type then
-    return self:send_errors {
-      __ERROR__ = 'No packet type.'
-    }
+    return self:send_error('No packet type.')
   end
   local validator = validators[packet_type]
   if not validator then
-    return self:send_errors {
-      __ERROR__ = 'Unknown packet type [' .. packet_type .. '].'
-    }
+    return self:send_error('Unknown packet type [' .. packet_type .. '].')
   end
   local errors = {}
   if not validator:validate(packet, errors, i18n.null) then
@@ -42,22 +38,12 @@ function Dispatcher:dispatch(message)
   end
   local handler = self[packet_type]
   if not handler then
-    return self:send_errors {
-      __ERROR__ = 'Oops, no handler for [' .. packet_type .. '].'
-    }
+    return self:send_error('Oops, no handler for [' .. packet_type .. '].')
   end
   return handler(self, packet)
 end
 
 -- Protocol Handlers
-
-function Dispatcher:send_errors(errors)
-  print(pretty.dump(errors))
-  return self.c:send {
-    t = 'errors',
-    errors = errors
-  }
-end
 
 function Dispatcher:tiles(p)
   local xmin, ymin, xmax, ymax = unpack(p.area)
@@ -90,14 +76,12 @@ function Dispatcher:place(p)
   local x, y = p.x, p.y
   local area_code = area_code_from_tile(x, y)
   local cell = area_cell_offset(x, y)
-  if not self.r:mark_area_cell(area_code, cell, 1) then
-    return
+  if not self.r:mark_area_cell(area_code, cell, '1') then
+    return self:send_error('Failed to place at (' .. x .. ':' .. y .. ').')
   end
   local id = newid()
-  local lifetime = time() + rand.uniform(10) + 10
-  self.r:add_lifetime(id, lifetime)
-  self.r:add_area_object_id(area_code, id)
-  self.r:add_object(
+  local ok =
+    self.r:add_object(
     id,
     {
       x = x,
@@ -106,6 +90,13 @@ function Dispatcher:place(p)
       cell = cell
     }
   )
+  if not ok then
+    self.r:mark_area_cell(area_code, cell, '0')
+    return self:send_error('Failed to add the object.')
+  end
+  local lifetime = time() + rand.uniform(10) + 10
+  self.r:add_lifetime(id, lifetime)
+  self.r:add_area_object_id(area_code, id)
   self.c:publish(
     area_code,
     {
@@ -152,6 +143,20 @@ function Dispatcher:send_removed(object_ids)
   self.c:send {
     t = 'remove',
     objects = object_ids
+  }
+end
+
+function Dispatcher:send_error(msg)
+  return self:send_errors {
+    __ERROR__ = msg
+  }
+end
+
+function Dispatcher:send_errors(errors)
+  print(pretty.dump(errors))
+  return self.c:send {
+    t = 'errors',
+    errors = errors
   }
 end
 

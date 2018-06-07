@@ -44,7 +44,7 @@ function Repository:all_objects(object_ids)
 end
 
 function Repository:add_object(id, obj)
-  self.redis:set('OBJECT:' .. id, mp.encode(obj))
+  return self.redis:set('OBJECT:' .. id, mp.encode(obj), 'NX')
 end
 
 -- LIFETIME

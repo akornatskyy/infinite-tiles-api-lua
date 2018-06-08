@@ -2,9 +2,9 @@
 .PHONY: clean env test qa run debian rm luajit luarocks nginx
 
 ENV=$(shell pwd)/env
-LUA_VERSION=2.1.0-beta3
+LUA_VERSION=2.1
 LUAROCKS_VERSION=2.4.4
-NGINX_VERSION=1.14.0
+NGINX_VERSION=1.15.0
 NGINX_LUA_MODULE_VERSION=v0.10.13
 
 ifeq (Darwin,$(shell uname -s))
@@ -18,8 +18,8 @@ clean:
 	rm -rf luacov.* luac.out .luacheckcache *.so
 
 env: luarocks
-	for rock in lbase64 luaossl luasocket struct utf8 \
-			lua-messagepack busted luacov luacheck redis-lua ; do \
+	for rock in luasec lbase64 luaossl luasocket struct utf8 lua-cmsgpack \
+			busted luacov luacheck redis-lua ; do \
 		$(ENV)/bin/luarocks --deps-mode=one install $$rock ; \
 	done ; \
 	$(ENV)/bin/luarocks install --server=http://luarocks.org/dev lucid
@@ -38,28 +38,27 @@ debian:
 		libssl-dev
 
 rm: clean
-	rm -rf $(ENV)
+	rm -rf $(ENV) luajit luarocks
 
 luajit: rm
-	mkdir luajit && \
+	mkdir luajit && cd luajit && \
 	wget -c https://github.com/LuaJIT/LuaJIT/archive/v$(LUA_VERSION).tar.gz \
-		-O - | tar -xzC luajit --strip-components=1 && \
-	cd luajit && \
-  	sed -i.bak s%/usr/local%$(ENV)%g src/luaconf.h && \
+		-O - | tar -xzC . --strip-components=1 && \
+ 	sed -i.bak s%/usr/local%$(ENV)%g src/luaconf.h && \
 	sed -i.bak s%./?.lua\"%./?.lua\;./src/?.lua\"%g src/luaconf.h && \
 	export MACOSX_DEPLOYMENT_TARGET=10.10 && \
 	unset LUA_PATH && unset LUA_CPATH && \
-    make -s install PREFIX=$(ENV) INSTALL_INC=$(ENV)/include && \
-	ln -sf luajit-$(LUA_VERSION) $(ENV)/bin/lua && \
+	make -s install PREFIX=$(ENV) INSTALL_INC=$(ENV)/include && \
+	ln -sf $(ENV)/bin/luajit-* $(ENV)/bin/lua && \
 	cd .. && rm -rf luajit
 
 luarocks: luajit
+	mkdir luarocks && cd luarocks && \
 	wget -qc https://luarocks.org/releases/luarocks-$(LUAROCKS_VERSION).tar.gz \
-		-O - | tar -xzf - && \
-	cd luarocks-$(LUAROCKS_VERSION) && \
+		-O - | tar -xzC . --strip-components=1 && \
 	./configure --prefix=$(ENV) --with-lua=$(ENV) --force-config && \
 	make -s build install && \
-	cd .. && rm -rf luarocks-$(LUAROCKS_VERSION)
+	cd .. && rm -rf luarocks
 
 nginx:
 	WDIR=`pwd` && \

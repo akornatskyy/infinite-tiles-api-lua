@@ -17,7 +17,7 @@ make test qa
 
 ## Run
 
-Serve files with a web server:
+Serve requests with a web server:
 
 ```sh
 make run
@@ -35,11 +35,18 @@ seconds and removed once the object lifetime expires.
 
 ### Strings
 
-| Key Format                | Value                      | Notes                                                   |
-| ------------------------- | -------------------------- | ------------------------------------------------------- |
-| OBJECT:{object_id}        | messagepack encoded object | The object meta information.                            |
-| LOCK:{object_id}          | empty string               | The lock to exclusively operate with object.            |
-| LOCK:LIFETIME:{object_id} | empty string               | The lock to exclusively operate with object's lifetime. |
+| Key Format              | Value                      | Notes                                                        |
+| ----------------------- | -------------------------- | ------------------------------------------------------------ |
+| VIEWPORT:{session_id}   | messagepack encoded object | The area meta information.                                   |
+| OBJECT:{object_id}      | messagepack encoded object | The object meta information.                                 |
+| LOCK:OBJECT:{object_id} | empty string               | The lock to exclusively operate with object, expires in 1 second. |
+| MOVING:{object_id}      | messagepack encoded object | The moving object meta information.                          |
+
+Area meta information.
+
+| Field Name               | Field Type  | Notes                                                    |
+| ------------------------ | ----------- | -------------------------------------------------------- |
+| [xmin, ymin, xmax, ymax] | list of int | The area corner coordinates (left top and right bottom). |
 
 Object meta information.
 
@@ -50,11 +57,23 @@ Object meta information.
 | area       | string     | The reference to area id. |
 | cell       | int        | The cell within area.     |
 
+Moving object meta information.
+
+| Field Name | Field Type | Notes                                              |
+| ---------- | ---------- | -------------------------------------------------- |
+| x          | int        | The tile x coordinate.                             |
+| y          | int        | The tile y coordinate.                             |
+| area       | string     | The reference to area id.                          |
+| cell       | int        | The cell within area.                              |
+| time       | float      | The unix timestamp when the move has been started. |
+| duration   | float      | The duration in seconds for the move to complete.  |
+
 ### Lists
 
-| Key Format          | Value             | Notes                                      |
-| ------------------- | ----------------- | ------------------------------------------ |
-| A:OBJECTS:{area_id} | list of object id | The list of objects within the given area. |
+| Key Format          | Value             | Notes                                             |
+| ------------------- | ----------------- | ------------------------------------------------- |
+| A:OBJECTS:{area_id} | list of object id | The list of objects within the given area.        |
+| A:MOVING:{area_id}  | list of object id | The list of moving objects within the given area. |
 
 ### Bit Sets
 
@@ -67,6 +86,7 @@ Object meta information.
 | Key Format | Value            | Notes                                                        |
 | ---------- | ---------------- | ------------------------------------------------------------ |
 | LIFETIME   | set of object id | The sorted set of objects' lifetime. The object's end of lifetime timestamp is used as sorted set's score. |
+| MOVETIME     | set of object id | The sorted set of moving object's timeout. The moving object's end of move timestamp is used as sorted set's score. |
 
 ### Channels
 

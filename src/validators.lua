@@ -1,4 +1,5 @@
 local validator = require 'validation.validator'
+local length = require 'validation.rules.length'
 local required = require 'validation.rules.required'
 local range = require 'validation.rules.range'
 
@@ -17,6 +18,12 @@ return {
   },
   place = validator.new {
     __ERROR__ = {allowed_keys {'t', 'x', 'y'}},
+    x = coordinate_rule,
+    y = coordinate_rule
+  },
+  move = validator.new {
+    __ERROR__ = {allowed_keys {'t', 'id', 'x', 'y'}},
+    id = {required, length {min = 8, max = 8}},
     x = coordinate_rule,
     y = coordinate_rule
   }

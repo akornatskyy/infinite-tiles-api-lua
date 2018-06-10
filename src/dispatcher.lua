@@ -112,6 +112,9 @@ function Dispatcher:place(p)
   )
 end
 
+function Dispatcher:move()
+end
+
 -- Internal details
 
 function Dispatcher:send_objects(object_ids)

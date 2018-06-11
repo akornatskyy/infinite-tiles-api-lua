@@ -47,6 +47,16 @@ function Repository:add_object(id, obj)
   return self.redis:set('OBJECT:' .. id, mp.encode(obj), 'NX')
 end
 
+-- LOCK OBJECT
+
+function Repository:lock_object(id)
+  return self.redis:set('LOCK:OBJECT:' .. id, '', 'EX', '1', 'NX') == 'OK'
+end
+
+function Repository:unlock_object(id)
+  return self.redis:del('LOCK:OBJECT:' .. id)
+end
+
 -- LIFETIME
 
 function Repository:add_lifetime(id, lifetime)

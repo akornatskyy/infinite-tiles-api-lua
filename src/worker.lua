@@ -6,7 +6,7 @@ local time, sleep = socket.gettime, socket.sleep
 local sources = {
   ['LIFETIME'] = [[
     local id = ARGV[1]
-    local lock = 'LOCK:LIFETIME:' .. id
+    local lock = 'LOCK:OBJECT:' .. id
     if not redis.call('set', lock, '', 'EX', '1', 'NX') then
       return false
     end

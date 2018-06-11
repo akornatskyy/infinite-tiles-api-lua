@@ -112,7 +112,12 @@ function Dispatcher:place(p)
   )
 end
 
-function Dispatcher:move()
+function Dispatcher:move(p)
+  local id = p.id
+  if not self.r:lock_object(id) then
+    return self:send_error('Unable to acquire a lock for ' .. id .. '.')
+  end
+  self.r:unlock_object(id)
 end
 
 -- Internal details

@@ -29,7 +29,7 @@ describe('worker', function()
 
     it('returns if lock cannot be acquired', function()
       setup_redis {
-        {{'set', 'LOCK:LIFETIME:123', '', 'EX', '1', 'NX'}, false}
+        {{'set', 'LOCK:OBJECT:123', '', 'EX', '1', 'NX'}, false}
       }
 
       assert.is_false(f {'123'})
@@ -37,10 +37,10 @@ describe('worker', function()
 
     it('clean ups if object is not available', function()
       setup_redis {
-        {{'set', 'LOCK:LIFETIME:123', '', 'EX', '1', 'NX'}, true},
+        {{'set', 'LOCK:OBJECT:123', '', 'EX', '1', 'NX'}, true},
         {{'get', 'OBJECT:123'}},
         {{'zrem', 'LIFETIME', '123'}},
-        {{'del', 'LOCK:LIFETIME:123'}}
+        {{'del', 'LOCK:OBJECT:123'}}
       }
 
       assert.is_true(f {'123'})
@@ -51,14 +51,14 @@ describe('worker', function()
       local object = {area = 'N0W0', cell = 5}
       local packet = {t = 'remove', objects = {'123'}}
       setup_redis {
-        {{'set', 'LOCK:LIFETIME:123', '', 'EX', '1', 'NX'}, true},
+        {{'set', 'LOCK:OBJECT:123', '', 'EX', '1', 'NX'}, true},
         {{'get', 'OBJECT:123'}, object},
         {{'lrem', 'A:OBJECTS:N0W0', '1', '123'}},
         {{'setbit', 'A:CELLS:N0W0', 5, 0}},
         {{'del', 'OBJECT:123'}},
         {{'publish', 'AREA:N0W0', packet}},
         {{'zrem', 'LIFETIME', '123'}},
-        {{'del', 'LOCK:LIFETIME:123'}}
+        {{'del', 'LOCK:OBJECT:123'}}
       }
 
       assert.is_true(f {'123'})

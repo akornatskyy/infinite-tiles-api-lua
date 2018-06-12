@@ -117,6 +117,10 @@ function Dispatcher:move(p)
   if not self.r:lock_object(id) then
     return self:send_error('Unable to acquire a lock for ' .. id .. '.')
   end
+  if self.r:is_moving(id) then
+    self.r:unlock_object(id)
+    return self:send_error('The object ' .. id .. ' is moving.')
+  end
   self.r:unlock_object(id)
 end
 

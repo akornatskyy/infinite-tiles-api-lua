@@ -63,6 +63,12 @@ function Repository:add_lifetime(id, lifetime)
   self.redis:zadd('LIFETIME', lifetime, id)
 end
 
+-- MOVING
+
+function Repository:is_moving(id)
+  return self.redis:exists('MOVING:' .. id) == 1
+end
+
 -- AREA OBJECTS
 
 function Repository:all_areas_object_ids(areas)

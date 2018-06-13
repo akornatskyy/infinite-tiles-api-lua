@@ -47,6 +47,14 @@ function Repository:add_object(id, obj)
   return self.redis:set('OBJECT:' .. id, mp.encode(obj), 'NX')
 end
 
+function Repository:get_object(id)
+  local obj = self.redis:get('OBJECT:' .. id)
+  if type(obj) ~= 'string' then
+    return nil
+  end
+  return mp.decode(obj)
+end
+
 -- LOCK OBJECT
 
 function Repository:lock_object(id)

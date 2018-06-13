@@ -121,6 +121,12 @@ function Dispatcher:move(p)
     self.r:unlock_object(id)
     return self:send_error('The object ' .. id .. ' is moving.')
   end
+  local obj = self.r:get_object(id)
+  if not obj then
+    self.r:unlock_object(id)
+    self.c:send {t = 'remove', objects = {id}}
+    return self:send_error('The object ' .. id .. ' not found.')
+  end
   self.r:unlock_object(id)
 end
 

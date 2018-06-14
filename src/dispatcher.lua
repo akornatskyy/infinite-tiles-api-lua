@@ -127,6 +127,14 @@ function Dispatcher:move(p)
     self.c:send {t = 'remove', objects = {id}}
     return self:send_error('The object ' .. id .. ' not found.')
   end
+  local x, y = p.x, p.y
+  local area_code = area_code_from_tile(x, y)
+  local cell = area_cell_offset(x, y)
+  if not self.r:mark_area_cell(area_code, cell, '1') then
+    self.r:unlock_object(id)
+    return self:send_error('Unable to acquire area cell for ' .. id .. '.')
+  end
+  self.r:mark_area_cell(obj.area, obj.cell, '0')
   self.r:unlock_object(id)
 end
 

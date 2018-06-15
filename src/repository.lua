@@ -71,6 +71,10 @@ function Repository:add_lifetime(id, lifetime)
   self.redis:zadd('LIFETIME', lifetime, id)
 end
 
+function Repository:incr_lifetime(id, delta)
+  self.redis:zincrby('LIFETIME', delta, id)
+end
+
 -- MOVING
 
 function Repository:is_moving(id)

@@ -135,6 +135,11 @@ function Dispatcher:move(p)
     return self:send_error('Unable to acquire area cell for ' .. id .. '.')
   end
   self.r:mark_area_cell(obj.area, obj.cell, '0')
+
+  local duration = 1 + rand.uniform(5)
+  local lifetime = duration + 1 + rand.uniform(5)
+
+  self.r:incr_lifetime(id, lifetime)
   self.r:unlock_object(id)
 end
 

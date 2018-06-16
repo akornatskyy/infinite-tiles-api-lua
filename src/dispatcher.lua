@@ -136,10 +136,12 @@ function Dispatcher:move(p)
   end
   self.r:mark_area_cell(obj.area, obj.cell, '0')
 
+  local now = time()
   local duration = 1 + rand.uniform(5)
   local lifetime = duration + 1 + rand.uniform(5)
 
   self.r:incr_lifetime(id, lifetime)
+  self.r:add_movetime(id, now + duration)
   self.r:unlock_object(id)
 end
 

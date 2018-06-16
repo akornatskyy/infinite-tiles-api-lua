@@ -81,6 +81,12 @@ function Repository:is_moving(id)
   return self.redis:exists('MOVING:' .. id) == 1
 end
 
+-- MOVETIME
+
+function Repository:add_movetime(id, movetime)
+  self.redis:zadd('MOVETIME', movetime, id)
+end
+
 -- AREA OBJECTS
 
 function Repository:all_areas_object_ids(areas)

@@ -130,6 +130,12 @@ function Repository:mark_area_cell(area, cell, value)
   )
 end
 
+-- AREA MOVING
+
+function Repository:add_area_moving_id(area, id)
+  self.redis:lpush('A:MOVING:' .. area, id)
+end
+
 -- Internal details
 
 function Repository:all_areas_id(prefix, areas)

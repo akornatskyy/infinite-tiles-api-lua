@@ -81,6 +81,10 @@ function Repository:is_moving(id)
   return self.redis:exists('MOVING:' .. id) == 1
 end
 
+function Repository:add_moving(id, obj)
+  self.redis:set('MOVING:' .. id, mp.encode(obj))
+end
+
 -- MOVETIME
 
 function Repository:add_movetime(id, movetime)

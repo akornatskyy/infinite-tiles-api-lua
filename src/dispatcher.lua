@@ -143,6 +143,17 @@ function Dispatcher:move(p)
   self.r:incr_lifetime(id, lifetime)
   self.r:add_movetime(id, now + duration)
   self.r:add_area_moving_id(obj.area, id)
+  self.r:add_moving(
+    id,
+    {
+      x = x,
+      y = y,
+      area = area_code,
+      cell = cell,
+      time = now,
+      duration = duration
+    }
+  )
   self.r:unlock_object(id)
 end
 

@@ -1,5 +1,5 @@
-.SILENT: clean env test qa run debian rm luajit luarocks nginx
-.PHONY: clean env test qa run debian rm luajit luarocks nginx
+.SILENT: clean env test qa run e2e debian rm luajit luarocks nginx
+.PHONY: clean env test qa run e2e debian rm luajit luarocks nginx
 
 ENV=$(shell pwd)/env
 LUA_VERSION=2.1
@@ -19,19 +19,28 @@ clean:
 
 env: luarocks
 	for rock in luasec lbase64 luaossl luasocket struct utf8 lua-cmsgpack \
-			busted luacov luacheck redis-lua ; do \
+			busted luacov luacheck redis-lua lua-ev lua-websockets ; do \
 		$(ENV)/bin/luarocks --deps-mode=one install $$rock ; \
 	done ; \
 	$(ENV)/bin/luarocks install --server=http://luarocks.org/dev lucid
 
 test:
-	$(ENV)/bin/busted
+	$(ENV)/bin/busted -v
 
 qa:
-	$(ENV)/bin/luacheck -q src/ spec/
+	$(ENV)/bin/luacheck -q src/ spec/ *.lua
 
 run:
-	$(ENV)/bin/nginx -c conf/lucid.conf
+	$(ENV)/bin/nginx -c conf/nginx.conf
+
+e2e:
+	redis-cli -h $${REDIS_HOST:-localhost} flushall ; \
+	($(ENV)/bin/nginx -c conf/nginx.conf &) ; \
+	($(ENV)/bin/lua src/worker.lua &) ; \
+	sleep 1 ; \
+	$(ENV)/bin/lua e2e.lua 4 20 ; \
+	killall nginx ; \
+	killall lua
 
 debian:
 	apt-get install build-essential unzip libncurses5-dev libreadline6-dev \
@@ -98,5 +107,5 @@ nginx:
 	cd .. && \
 	cp nginx/objs/nginx bin/ && \
 	cp nginx/conf/mime.types conf/ && \
-	ln -sf $$WDIR/etc/nginx.conf conf/lucid.conf && \
+	ln -sf $$WDIR/etc/nginx.conf conf/nginx.conf && \
 	rm -rf nginx

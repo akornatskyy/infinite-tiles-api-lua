@@ -1,8 +1,13 @@
 language: c
 
+services:
+    - redis-server
+
 install:
     - make env
+    - make nginx
 
 script:
     - make test
     - make qa
+    - make e2e

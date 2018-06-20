@@ -3,6 +3,9 @@ language: c
 services:
     - redis-server
 
+before_install:
+    - sudo apt-get install -y libev-dev
+
 install:
     - make env
     - make nginx

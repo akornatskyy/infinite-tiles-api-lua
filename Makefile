@@ -102,7 +102,8 @@ nginx:
 	./configure --prefix=$(ENV) --without-http_rewrite_module --without-pcre \
 		--with-http_stub_status_module \
 		--add-module=./lua-nginx-module \
-		--with-ld-opt="-L./ -Wl,--whole-archive -lextra -Wl,--no-whole-archive" ; \
+		--with-ld-opt="-L./ -Wl,--whole-archive -lextra -Wl,--no-whole-archive \
+			-Wl,-rpath,$$LUAJIT_LIB" ; \
 	make -j4 ; \
 	cd .. && \
 	cp nginx/objs/nginx bin/ && \

@@ -46,7 +46,7 @@ end
 -- Protocol Handlers
 
 function Dispatcher:tiles(p)
-  local xmin, ymin, xmax, ymax = unpack(p.area)
+  local xmin, ymin, dx, dy = unpack(p.area)
   if p.coords then
     self.c:send {
       t = 'tiles',
@@ -54,7 +54,7 @@ function Dispatcher:tiles(p)
       data = self.r:tiles(xmin, ymin, p.coords)
     }
   end
-  local codes = area_codes(xmin, ymin, xmax, ymax)
+  local codes = area_codes(xmin, ymin, dx, dy)
   local t = area_codes_sub(codes, self.area_codes)
   local object_ids
   if #t > 0 then

@@ -14,11 +14,11 @@ local function cell_offset(x, y)
   return area_size_x * (y % area_size_y) + x % area_size_x
 end
 
-local function codes(x1, y1, x2, y2)
-  x1 = math.floor(x1 / area_size_x)
-  y1 = math.floor(y1 / area_size_y)
-  x2 = math.floor(x2 / area_size_x)
-  y2 = math.floor(y2 / area_size_y)
+local function codes(xmin, ymin, dx, dy)
+  local x1 = math.floor(xmin / area_size_x)
+  local y1 = math.floor(ymin / area_size_y)
+  local x2 = math.floor((xmin + dx) / area_size_x)
+  local y2 = math.floor((ymin + dy) / area_size_y)
   local c = {}
   for y = y1, y2 do
     for x = x1, x2 do

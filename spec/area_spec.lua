@@ -32,7 +32,8 @@ describe('area', function()
         {'S2E1', 4, 16},
         {'S2E1', 7, 23},
         {'N2E1', 4, -9},
-        {'N2E1', 7, -16}
+        {'N2E1', 7, -16},
+        {'N1E1', 5, -5}
       }
       for _, args in next, cases do
         local expected, x, y = unpack(args)
@@ -49,6 +50,8 @@ describe('area', function()
         {2, 2, 0},
         {7, 3, 1},
         {9, 1, 2},
+        {18, 2, 4},
+        {31, 7, 23},
         {17, 117, 268},
       }
       for _, args in next, cases do
@@ -70,12 +73,12 @@ describe('area', function()
   describe('codes', function()
     it('returns area codes associated with given rectangle', function()
       local cases = {
-        {{N1E0=true, N1W1=true, S0E0=true, S0W1=true}, -1, -1, 1, 1},
-        {{S0E0=true}, 0, 0, 1, 1},
+        {{N1E0=true, N1W1=true, S0E0=true, S0W1=true}, -1, -1, 2, 2},
+        {{S0E0=true}, 0, 0, 1, 1}
       }
       for _, args in next, cases do
-        local expected, x1, y1, x2, y2 = unpack(args)
-        local r = area.codes(x1, y1, x2, y2)
+        local expected, x, y, dx, dy = unpack(args)
+        local r = area.codes(x, y, dx, dy)
         assert.same(expected, r)
       end
     end)
@@ -87,7 +90,8 @@ describe('area', function()
         {{}, {}, {}},
         {{'a'}, {a = 1}, {}},
         {{}, {}, {a = 1}},
-        {{'a'}, {a = 1, b = 1}, {b = 1, c = 1}}
+        {{'a'}, {a = 1, b = 1}, {b = 1, c = 1}},
+        {{}, {a = 1}, {a = 1, b = 1}}
       }
       for _, args in next, cases do
         local expected, t1, t2 = unpack(args)

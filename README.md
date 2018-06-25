@@ -44,9 +44,9 @@ seconds and removed once the object lifetime expires.
 
 Area meta information.
 
-| Field Name               | Field Type  | Notes                                                    |
-| ------------------------ | ----------- | -------------------------------------------------------- |
-| [xmin, ymin, xmax, ymax] | list of int | The area corner coordinates (left top and right bottom). |
+| Field Name           | Field Type  | Notes                                                        |
+| -------------------- | ----------- | ------------------------------------------------------------ |
+| [xmin, ymin, dx, dy] | list of int | The area corner coordinate (left, top) and size (width, height). |
 
 Object meta information.
 

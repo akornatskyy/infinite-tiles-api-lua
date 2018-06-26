@@ -20,8 +20,20 @@ local function logger(name)
   end
 end
 
+local function warn(msg)
+  return 'WARN ' .. msg
+end
+
 local function err(msg)
   return 'ERR ' .. msg
+end
+
+local function table_length(t)
+  local c = 0
+  for _ in next, t do
+    c = c + 1
+  end
+  return c
 end
 
 -- math
@@ -88,6 +100,7 @@ function Player:on_open()
   self.log('connected')
   self.now = now()
   self.update_timer:start(loop, true)
+  self.timer:start(loop, true)
 end
 
 function Player:on_error(msg)
@@ -125,6 +138,18 @@ function Player:on_update(delta)
   end
 end
 
+function Player:on_place_or_move()
+  local l = table_length(self.objects)
+  local x, y, dx, dy = unpack(self.area)
+  dx = math.floor(dx / 3)
+  dy = math.floor(dy / 3)
+  if l < dx * dy / 2 then
+    x = x + dx + rand.uniform(dx)
+    y = y + dy + rand.uniform(dy)
+    self:send {t = 'place', x = x, y = y}
+  end
+end
+
 function Player:on_message(p)
   self.log('<<< ' .. pretty.dump(p))
   self.in_stats:incr(p.t)
@@ -147,8 +172,12 @@ function Player:remove(p)
 end
 
 function Player:stats()
+  local c = self.in_stats.counters
   self.log('stats outgoing: ' .. pretty.dump(self.out_stats.counters))
-  self.log('stats incoming: ' .. pretty.dump(self.in_stats.counters))
+  self.log('stats incoming: ' .. pretty.dump(c))
+  if not c.place or not c.remove then
+    self.log(warn('is worker alive?'))
+  end
 end
 
 local function player(id)
@@ -197,6 +226,14 @@ local function player(id)
     end,
     1,
     1 / 60
+  )
+  self.timer =
+    ev.Timer.new(
+    function()
+      self:on_place_or_move()
+    end,
+    2,
+    1 / 4
   )
   setmetatable(self, {__index = Player})
   ws:connect('ws://localhost:8080/game')

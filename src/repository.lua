@@ -87,7 +87,7 @@ end
 
 -- MOVETIME
 
-function Repository:add_movetime(id, movetime)
+function Repository:set_movetime(id, movetime)
   self.redis:zadd('MOVETIME', movetime, id)
 end
 

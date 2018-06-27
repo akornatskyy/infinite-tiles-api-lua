@@ -141,7 +141,7 @@ function Dispatcher:move(p)
   local lifetime = duration + 1 + rand.uniform(5)
 
   self.r:incr_lifetime(id, lifetime)
-  self.r:add_movetime(id, now + duration)
+  self.r:set_movetime(id, now + duration)
   self.r:add_area_moving_id(obj.area, id)
   self.r:add_moving(
     id,
@@ -154,6 +154,36 @@ function Dispatcher:move(p)
       duration = duration
     }
   )
+  local e = {
+    t = 'move',
+    objects = {
+      {
+        id = id,
+        x = x,
+        y = y,
+        duration = duration
+      }
+    }
+  }
+  if obj.area ~= area_code then
+    self.r:add_area_object_id(area_code, id)
+    self.r:add_area_moving_id(area_code, id)
+    self.c:publish(
+      area_code,
+      {
+        t = 'place',
+        objects = {
+          {
+            id = id,
+            x = obj.x,
+            y = obj.y
+          }
+        }
+      }
+    )
+    self.c:publish(area_code, e)
+  end
+  self.c:publish(obj.area, e)
   self.r:unlock_object(id)
 end
 

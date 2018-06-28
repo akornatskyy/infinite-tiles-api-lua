@@ -1,5 +1,5 @@
-.SILENT: clean env test qa run e2e debian rm luajit luarocks nginx
-.PHONY: clean env test qa run e2e debian rm luajit luarocks nginx
+.SILENT: clean env test qa cov run e2e debian rm luajit luarocks nginx
+.PHONY: clean env test qa cov run e2e debian rm luajit luarocks nginx
 
 ENV=$(shell pwd)/env
 LUA_VERSION=2.1
@@ -19,7 +19,7 @@ clean:
 
 env: luarocks
 	for rock in luasec lbase64 luaossl luasocket struct utf8 lua-cmsgpack \
-			busted luacov luacheck redis-lua lua-ev lua-websockets ; do \
+			busted cluacov luacheck redis-lua lua-ev lua-websockets ; do \
 		$(ENV)/bin/luarocks --deps-mode=one install $$rock ; \
 	done ; \
 	$(ENV)/bin/luarocks install --server=http://luarocks.org/dev lucid
@@ -29,6 +29,10 @@ test:
 
 qa:
 	$(ENV)/bin/luacheck -q src/ spec/ *.lua
+
+cov:
+	rm -f luacov.* ; env/bin/busted -c ; \
+		env/bin/luacov src/ ; tail -18 luacov.report.out
 
 run:
 	$(ENV)/bin/nginx -c conf/nginx.conf
@@ -44,7 +48,7 @@ e2e:
 
 debian:
 	apt-get install build-essential unzip libncurses5-dev libreadline6-dev \
-		libssl-dev
+		libssl-dev libev-dev
 
 rm: clean
 	rm -rf $(ENV) luajit luarocks

@@ -14,11 +14,11 @@ function Client:publish(area, packet)
 end
 
 function Client:subscribe(areas)
-  self.subscription:subscribe(unpack(table_prefix(areas, 'AREA:')))
+  self.subscription:subscribe(table_prefix(areas, 'AREA:'))
 end
 
 function Client:unsubscribe(areas)
-  self.subscription:unsubscribe(unpack(table_prefix(areas, 'AREA:')))
+  self.subscription:unsubscribe(table_prefix(areas, 'AREA:'))
 end
 
 --

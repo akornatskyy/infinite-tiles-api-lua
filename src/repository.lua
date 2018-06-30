@@ -67,7 +67,7 @@ end
 
 -- LIFETIME
 
-function Repository:add_lifetime(id, lifetime)
+function Repository:set_lifetime(id, lifetime)
   self.redis:zadd('LIFETIME', lifetime, id)
 end
 
@@ -79,6 +79,11 @@ end
 
 function Repository:is_moving(id)
   return self.redis:exists('MOVING:' .. id) == 1
+end
+
+function Repository:all_moving(object_ids)
+  local keys = table_prefix(object_ids, 'MOVING:')
+  return decode_objects(self.redis:mget(unpack(keys)), object_ids)
 end
 
 function Repository:add_moving(id, obj)
@@ -135,6 +140,10 @@ function Repository:mark_area_cell(area, cell, value)
 end
 
 -- AREA MOVING
+
+function Repository:all_areas_moving_ids(areas)
+  return self:all_areas_id('A:MOVING:', areas)
+end
 
 function Repository:add_area_moving_id(area, id)
   self.redis:lpush('A:MOVING:' .. area, id)

@@ -60,6 +60,7 @@ function Dispatcher:tiles(p)
   if #t > 0 then
     object_ids = self.r:all_areas_object_ids(t)
     self:send_objects(object_ids)
+    self:send_moving(self.r:all_areas_moving_ids(t))
     self.c:subscribe(t)
   else
     object_ids = {}
@@ -95,7 +96,7 @@ function Dispatcher:place(p)
     return self:send_error('Failed to add the object.')
   end
   local lifetime = time() + rand.uniform(10) + 10
-  self.r:add_lifetime(id, lifetime)
+  self.r:set_lifetime(id, lifetime)
   self.r:add_area_object_id(area_code, id)
   self.c:publish(
     area_code,
@@ -207,6 +208,31 @@ function Dispatcher:send_objects(object_ids)
   end
   self.c:send {
     t = 'place',
+    objects = t
+  }
+end
+
+function Dispatcher:send_moving(object_ids)
+  if #object_ids == 0 then
+    return
+  end
+  local t = self.r:all_moving(object_ids)
+  if #t == 0 then
+    return
+  end
+  local now = time()
+  for i = 1, #t do
+    local m = t[i]
+    t[i] = {
+      id = m.id,
+      x = m.x,
+      y = m.y,
+      duration = m.duration,
+      elapsed = now - m.time
+    }
+  end
+  self.c:send {
+    t = 'move',
     objects = t
   }
 end

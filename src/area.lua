@@ -41,10 +41,23 @@ local function codes_sub(t1, t2)
   return r
 end
 
+local function codes_intersect(t1, t2)
+  local r = {}
+  local i = 1
+  for key in next, t1 do
+    if t2[key] then
+      r[i] = key
+      i = i + 1
+    end
+  end
+  return r
+end
+
 return {
+  cell_offset = cell_offset,
   code = code,
   code_from_tile = code_from_tile,
-  cell_offset = cell_offset,
   codes = codes,
+  codes_intersect = codes_intersect,
   codes_sub = codes_sub
 }

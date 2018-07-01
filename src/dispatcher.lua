@@ -11,6 +11,7 @@ local validators = require 'validators'
 local area_cell_offset = area.cell_offset
 local area_code_from_tile = area.code_from_tile
 local area_codes = area.codes
+local area_codes_intersect = area.codes_intersect
 local area_codes_sub = area.codes_sub
 local base64_encode, rand_bytes = base64.encode, rand.bytes
 local table_sub = tableext.sub
@@ -68,7 +69,14 @@ function Dispatcher:tiles(p)
   t = area_codes_sub(self.area_codes, codes)
   if #t > 0 then
     self.c:unsubscribe(t)
-    self:send_removed(table_sub(self.r:all_areas_object_ids(t), object_ids))
+    object_ids = table_sub(self.r:all_areas_object_ids(t), object_ids)
+    if #object_ids > 0 then
+      t = area_codes_intersect(self.area_codes, codes)
+      if #t > 0 then
+        table_sub(object_ids, self.r:all_areas_object_ids(t))
+      end
+      self:send_removed(object_ids)
+    end
   end
   self.area_codes = codes
 end

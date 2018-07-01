@@ -1,7 +1,5 @@
 local area = require 'area'
 
-local describe, it, assert = describe, it, assert
-
 describe('area', function()
   describe('code', function()
     it('returns code from coordinates', function()
@@ -96,6 +94,24 @@ describe('area', function()
       for _, args in next, cases do
         local expected, t1, t2 = unpack(args)
         local r = area.codes_sub(t1, t2)
+        assert.same(expected, r)
+      end
+    end)
+  end)
+
+  describe('codes_intersect', function()
+    it('returns area codes that are in t1 and t2', function()
+      local cases = {
+        {{}, {}, {}},
+        {{}, {a = 1}, {}},
+        {{}, {}, {a = 1}},
+        {{'b'}, {a = 1, b = 1}, {b = 1, c = 1}},
+        {{'b'}, {a = 1, b = 1}, {b = 1}},
+        {{'a'}, {a = 1}, {a = 1, b = 1}}
+      }
+      for _, args in next, cases do
+        local expected, t1, t2 = unpack(args)
+        local r = area.codes_intersect(t1, t2)
         assert.same(expected, r)
       end
     end)

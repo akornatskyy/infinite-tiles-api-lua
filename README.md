@@ -59,14 +59,14 @@ Object meta information.
 
 Moving object meta information.
 
-| Field Name | Field Type | Notes                                              |
-| ---------- | ---------- | -------------------------------------------------- |
-| x          | int        | The tile x coordinate.                             |
-| y          | int        | The tile y coordinate.                             |
-| area       | string     | The reference to area id.                          |
-| cell       | int        | The cell within area.                              |
-| time       | float      | The unix timestamp when the move has been started. |
-| duration   | float      | The duration in seconds for the move to complete.  |
+| Field Name | Field Type | Notes                                                        |
+| ---------- | ---------- | ------------------------------------------------------------ |
+| x          | int        | The tile x coordinate.                                       |
+| y          | int        | The tile y coordinate.                                       |
+| area       | string     | The reference to area id.                                    |
+| cell       | int        | The cell within area.                                        |
+| time       | int        | The unix timestamp in seconds when the move has been started. |
+| duration   | int        | The duration in seconds for the move to complete.            |
 
 ### Lists
 

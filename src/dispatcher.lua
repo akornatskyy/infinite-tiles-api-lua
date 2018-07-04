@@ -145,12 +145,12 @@ function Dispatcher:move(p)
   end
   self.r:mark_area_cell(obj.area, obj.cell, '0')
 
-  local now = time()
+  local ts = time() + 1
   local duration = 1 + rand.uniform(5)
   local lifetime = duration + 1 + rand.uniform(5)
 
   self.r:incr_lifetime(id, lifetime)
-  self.r:set_movetime(id, now + duration)
+  self.r:set_movetime(id, ts + duration)
   self.r:add_area_moving_id(obj.area, id)
   self.r:add_moving(
     id,
@@ -159,7 +159,7 @@ function Dispatcher:move(p)
       y = y,
       area = area_code,
       cell = cell,
-      time = now,
+      time = ts,
       duration = duration
     }
   )
@@ -170,6 +170,7 @@ function Dispatcher:move(p)
         id = id,
         x = x,
         y = y,
+        time = ts,
         duration = duration
       }
     }
@@ -228,15 +229,14 @@ function Dispatcher:send_moving(object_ids)
   if #t == 0 then
     return
   end
-  local now = time()
   for i = 1, #t do
     local m = t[i]
     t[i] = {
       id = m.id,
       x = m.x,
       y = m.y,
-      duration = m.duration,
-      elapsed = now - m.time
+      time = m.time,
+      duration = m.duration
     }
   end
   self.c:send {

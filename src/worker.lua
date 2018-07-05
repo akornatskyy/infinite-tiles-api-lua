@@ -21,15 +21,64 @@ local sources = {
         objects = {id}
       }
       redis.call('publish', 'AREA:' .. o.area, e)
+      local m = redis.call('get', 'MOVING:' .. id)
+      if m then
+        redis.call('lrem', 'A:MOVING:' .. o.area, '1', id)
+        m = cmsgpack.unpack(m)
+        if o.area ~= m.area then
+          redis.call('lrem', 'A:MOVING:' .. m.area, '1', id)
+          redis.call('lrem', 'A:OBJECTS:' .. m.area, '1', id)
+          redis.call('setbit', 'A:CELLS:' .. m.area, m.cell, 0)
+          redis.call('publish', 'AREA:' .. m.area, e)
+        end
+        redis.call('del', 'MOVING:' .. id)
+      end
     end
     redis.call('zrem', 'LIFETIME', id)
+    redis.call('del', lock)
+    return true
+  ]],
+  ['MOVETIME'] = [[
+    local id = ARGV[1]
+    local lock = 'LOCK:OBJECT:' .. id
+    if not redis.call('set', lock, '', 'EX', '1', 'NX') then
+      return false
+    end
+    local m = redis.call('get', 'MOVING:' .. id)
+    if m then
+      m = cmsgpack.unpack(m)
+      local o = redis.call('get', 'OBJECT:' .. id)
+      if o then
+        o = cmsgpack.unpack(o)
+        local source_area = o.area
+        redis.call('lrem', 'A:MOVING:' .. source_area, '1', id)
+        o.x = m.x
+        o.y = m.y
+        o.area = m.area
+        o.cell = m.cell
+        redis.call('set', 'OBJECT:' .. id, cmsgpack.pack(o))
+        local e = cmsgpack.pack {
+          t = 'moved',
+          id = id,
+          area = m.area
+        }
+        if source_area ~= m.area then
+          redis.call('lrem', 'A:MOVING:' .. m.area, '1', id)
+          redis.call('lrem', 'A:OBJECTS:' .. source_area, '1', id)
+          redis.call('publish', 'AREA:' .. source_area, e)
+        end
+        redis.call('publish', 'AREA:' .. m.area, e)
+      end
+      redis.call('del', 'MOVING:' .. id)
+    end
+    redis.call('zrem', 'MOVETIME', id)
     redis.call('del', lock)
     return true
   ]]
 }
 
 local function log(msg)
-  print(os.date('%Y/%m/%d %T ') .. msg)
+  print(os.date('%T ') .. msg)
 end
 
 local function run()

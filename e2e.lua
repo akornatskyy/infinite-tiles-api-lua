@@ -144,9 +144,10 @@ function Player:on_place_or_move()
   dx = math.floor(dx / 3)
   dy = math.floor(dy / 3)
   if l < dx * dy / 2 then
-    x = x + dx + rand.uniform(dx)
-    y = y + dy + rand.uniform(dy)
     self:send {t = 'place', x = x, y = y}
+  else
+    local id = next(self.objects)
+    self:send {t = 'move', id = id, x = x, y = y}
   end
 end
 
@@ -165,6 +166,19 @@ function Player:place(p)
   end
 end
 
+function Player:move(p)
+  for _, o in next, p.objects do
+    self.objects[o.id] = nil
+    self.moving[o.id] = true
+  end
+end
+
+function Player:moved(p)
+  local id = p.id
+  self.objects[id] = self.moving[id]
+  self.moving[id] = nil
+end
+
 function Player:remove(p)
   for _, id in next, p.objects do
     self.objects[id] = nil
@@ -175,7 +189,7 @@ function Player:stats()
   local c = self.in_stats.counters
   self.log('stats outgoing: ' .. pretty.dump(self.out_stats.counters))
   self.log('stats incoming: ' .. pretty.dump(c))
-  if not c.place or not c.remove then
+  if not c.place or not c.remove or not c.move or not c.moved then
     self.log(warn('is worker alive?'))
   end
 end
@@ -192,6 +206,7 @@ local function player(id)
     time = 0,
     area = {0, 0},
     objects = {},
+    moving = {},
     in_stats = stats(),
     out_stats = stats()
   }

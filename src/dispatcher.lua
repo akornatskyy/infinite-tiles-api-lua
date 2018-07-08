@@ -15,7 +15,7 @@ local area_codes_intersect = area.codes_intersect
 local area_codes_sub = area.codes_sub
 local base64_encode, rand_bytes = base64.encode, rand.bytes
 local table_sub = tableext.sub
-local time, unpack = os.time, unpack
+local time, now, unpack = ngx.time, ngx.now, unpack
 
 local function newid()
   return base64_encode(rand_bytes(6))
@@ -44,7 +44,15 @@ function Dispatcher:dispatch(message)
   return handler(self, packet)
 end
 
--- Protocol Handlers
+-- protocol handlers
+
+function Dispatcher:ping(p)
+  self.c:send {
+    t = 'pong',
+    tc = p.time,
+    ts = now()
+  }
+end
 
 function Dispatcher:tiles(p)
   local xmin, ymin, dx, dy = unpack(p.area)
@@ -197,7 +205,7 @@ function Dispatcher:move(p)
   self.r:unlock_object(id)
 end
 
--- Internal details
+-- internal details
 
 function Dispatcher:send_objects(object_ids)
   if #object_ids == 0 then

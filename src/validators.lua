@@ -8,9 +8,13 @@ local rules = require 'rules'
 local allowed_keys = rules.allowed_keys
 local number = rules.number
 
-local coordinate_rule = {number, range{-100, 100}}
+local coordinate_rule = {number, range {-100, 100}}
 
 return {
+  ping = validator.new {
+    __ERROR__ = {allowed_keys {'t', 'time'}},
+    time = {number, range {min = 1530902228}}
+  },
   tiles = validator.new {
     __ERROR__ = {allowed_keys {'t', 'area', 'ref', 'coords'}},
     area = {required},

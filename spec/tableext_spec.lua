@@ -1,7 +1,5 @@
 local tableext = require 'tableext'
 
-local describe, it, assert = describe, it, assert
-
 describe('tableext', function()
   describe('prefix', function()
     it('returns a table with all elements prefixed', function()

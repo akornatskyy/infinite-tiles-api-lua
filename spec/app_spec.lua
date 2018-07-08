@@ -1,11 +1,10 @@
 local request = require 'http.functional.request'
 local writer = require 'http.functional.response'
 
-local insulate, it, assert = insulate, it, assert
-
 insulate('app hello', function()
 	package.loaded['resty.websocket.server'] = {}
 	package.loaded['resty.redis'] = {}
+	_G.ngx = {}
 	local app = require 'app'
 
 	it('responds with hello', function()

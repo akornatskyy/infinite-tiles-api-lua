@@ -7,10 +7,10 @@ local function table_prefix(t, prefix)
 end
 
 local function table_add_unique(t1, t2)
+  local n = #t1
   for i = 1, #t2 do
     local found = false
     local value = t2[i]
-    local n = #t1
     for j = 1, n do
       found = t1[j] == value
       if found then
@@ -18,7 +18,8 @@ local function table_add_unique(t1, t2)
       end
     end
     if not found then
-      t1[n + 1] = value
+      n = n + 1
+      t1[n] = value
     end
   end
 end

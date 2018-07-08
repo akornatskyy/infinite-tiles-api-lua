@@ -41,7 +41,7 @@ e2e:
 	redis-cli -h $${REDIS_HOST:-localhost} flushall ; \
 	($(ENV)/bin/nginx -c conf/nginx.conf &) ; \
 	($(ENV)/bin/lua src/worker.lua &) ; \
-	sleep 1 ; \
+	sleep 0.1 ; \
 	$(ENV)/bin/lua e2e.lua 4 20 ; \
 	killall nginx ; \
 	killall lua

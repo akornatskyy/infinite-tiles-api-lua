@@ -99,7 +99,10 @@ local Player = {}
 function Player:on_open()
   self.log('connected')
   self.now = now()
+  self:on_ping()
   self.update_timer:start(loop, true)
+  self.ping_timer:start(loop, true)
+  self.apply_force_timer:start(loop, true)
   self.timer:start(loop, true)
 end
 
@@ -116,13 +119,6 @@ function Player:send(p)
 end
 
 function Player:on_update(delta)
-  self.time = self.time + delta
-  if self.time >= 2 then
-    self.time = 0
-    local v = self.spring.velocity
-    v.x = v.x + (rand.uniform(101) - 50) / 20
-    v.y = v.y + (rand.uniform(101) - 50) / 20
-  end
   local x, y = self.spring:update(delta)
   x = math.floor(x)
   y = math.floor(y)
@@ -138,11 +134,23 @@ function Player:on_update(delta)
   end
 end
 
+function Player:on_ping()
+  self:send {t = 'ping', time = now()}
+end
+
+function Player:on_apply_force()
+  local v = self.spring.velocity
+  v.x = v.x + (rand.uniform(101) - 50) / 20
+  v.y = v.y + (rand.uniform(101) - 50) / 20
+end
+
 function Player:on_place_or_move()
   local l = table_length(self.objects)
   local x, y, dx, dy = unpack(self.area)
   dx = math.floor(dx / 3)
   dy = math.floor(dy / 3)
+  x = x + dx + rand.uniform(dx)
+  y = y + dy + rand.uniform(dy)
   if l < dx * dy / 2 then
     self:send {t = 'place', x = x, y = y}
   else
@@ -189,7 +197,7 @@ function Player:stats()
   local c = self.in_stats.counters
   self.log('stats outgoing: ' .. pretty.dump(self.out_stats.counters))
   self.log('stats incoming: ' .. pretty.dump(c))
-  if not c.place or not c.remove or not c.move or not c.moved then
+  if not c.pong or not c.place or not c.remove or not c.move or not c.moved then
     self.log(warn('is worker alive?'))
   end
 end
@@ -241,6 +249,22 @@ local function player(id)
     end,
     1,
     1 / 60
+  )
+  self.ping_timer =
+    ev.Timer.new(
+    function()
+      self:on_ping()
+    end,
+    1,
+    1
+  )
+  self.apply_force_timer =
+    ev.Timer.new(
+    function()
+      self:on_apply_force()
+    end,
+    2,
+    2
   )
   self.timer =
     ev.Timer.new(

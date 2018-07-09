@@ -55,6 +55,7 @@ function Dispatcher:ping(p)
 end
 
 function Dispatcher:tiles(p)
+  self.s:set_viewport(p.area)
   local xmin, ymin, dx, dy = unpack(p.area)
   if p.coords then
     self.c:send {
@@ -278,6 +279,7 @@ function Dispatcher:send_errors(errors)
 end
 
 function Dispatcher:close()
+  self.s:close()
   return self.r:close()
 end
 
@@ -285,9 +287,10 @@ end
 
 local Metatable = {__index = Dispatcher}
 
-local function new(client, repository)
+local function new(session, client, repository)
   return setmetatable(
     {
+      s = session,
       c = client,
       r = repository,
       area_codes = {}

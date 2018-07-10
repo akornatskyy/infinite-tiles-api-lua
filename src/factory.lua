@@ -6,6 +6,7 @@ local client = require 'client'
 local dispatcher = require 'dispatcher'
 local repository = require 'repository'
 local session = require 'session'
+local sink = require 'sink'
 local subscription = require 'subscription'
 
 local base64_encode, rand_bytes = base64.encode, rand.bytes
@@ -39,7 +40,8 @@ local function new(ws)
   local su = make_subscription()
   local r = make_redis()
   local d = dispatcher.new(se, client.new(ws, r, su), repository.new(r))
-  return su, d
+  local si = sink.new(se, repository.new(make_redis()))
+  return su, d, si
 end
 
 return {

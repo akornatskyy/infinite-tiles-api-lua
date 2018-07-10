@@ -16,10 +16,13 @@ app:get('', function(w)
 end)
 
 app:get('game', websocket, function(ws)
-  local subscription, dispatcher = factory.new(ws)
+  local subscription, dispatcher, sink = factory.new(ws)
 
   subscription:on('message', function(channel, message)
-    ws:send_binary(message)
+    message = sink:onmessage(message)
+    if message then
+      ws:send_binary(message)
+    end
   end)
   local thread = ngx.thread.spawn(function()
     return subscription:loop()

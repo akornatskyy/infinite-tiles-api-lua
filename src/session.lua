@@ -8,6 +8,14 @@ function Session:set_viewport(area)
   self.viewports:set('VIEWPORT:' .. self.session_id, mp.encode(area))
 end
 
+function Session:get_viewport()
+  local area = self.viewports:get('VIEWPORT:' .. self.session_id)
+  if type(area) ~= 'string' then
+    return nil
+  end
+  return mp.decode(area)
+end
+
 function Session:close()
   self.viewports:delete('VIEWPORT:' .. self.session_id)
 end

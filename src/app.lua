@@ -28,7 +28,6 @@ app:get('game', websocket, function(ws)
     return subscription:loop()
   end)
 
-
   ws:on('binary', function(message)
     dispatcher:dispatch(message)
   end)

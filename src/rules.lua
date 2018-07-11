@@ -1,6 +1,6 @@
 local next = next
 
-local AllowedKeys = {
+local AllowedFields = {
   __index = {
     validate = function(self, value, model)
       for name in next, model do
@@ -13,12 +13,12 @@ local AllowedKeys = {
   }
 }
 
-local function allowed_keys(t)
+local function allowed_fields(t)
   local allowed = {}
   for i = 1, #t do
     allowed[t[i]] = true
   end
-  return setmetatable({allowed = allowed}, AllowedKeys)
+  return setmetatable({allowed = allowed}, AllowedFields)
 end
 
 local number = {
@@ -31,6 +31,6 @@ local number = {
 }
 
 return {
-  allowed_keys = allowed_keys,
+  allowed_fields = allowed_fields,
   number = number
 }

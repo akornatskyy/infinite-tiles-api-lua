@@ -47,12 +47,16 @@ function Server:send_close(...)
   return self.ws:send_close(...)
 end
 
+--
+
+local Metatable = {__index = Server}
+
 local function new(options)
   local ws, err = websocket:new(options)
   if not ws then
     return nil, err
   end
-  return setmetatable({ws = ws, handlers = {}}, {__index = Server})
+  return setmetatable({ws = ws, handlers = {}}, Metatable)
 end
 
 local function middleware(following, options)

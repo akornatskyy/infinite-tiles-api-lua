@@ -10,7 +10,7 @@ local function decode_objects(t, object_ids)
   local j = 1
   for i = 1, #t do
     local obj = t[i]
-    -- there is probability that some object might be removed
+    -- there is a probability that some object might be removed
     if type(obj) == 'string' then
       obj = mp.decode(obj)
       obj.id = object_ids[i]
@@ -22,6 +22,7 @@ local function decode_objects(t, object_ids)
 end
 
 local Repository = {}
+local scripts = {}
 
 -- TILES
 
@@ -108,30 +109,30 @@ end
 
 -- AREA CELL
 
-local mark_area_cell_script = nil
-
 function Repository:mark_area_cell(area, cell, value)
-  if not mark_area_cell_script then
-    mark_area_cell_script =
+  if not scripts.mark_area_cell then
+    scripts.mark_area_cell =
       assert(
       self.redis:script(
         'load',
+        --luacov: disable
         [[
           local key = KEYS[1]
           local offset = ARGV[1]
           local value = tonumber(ARGV[2])
           local mark = redis.call('getbit', key, offset)
           if mark == value then
-            return false
+            return
           end
           redis.call('setbit', key, offset, value)
-          return true
+          return 1
         ]]
+        --luacov: enable
       )
     )
   end
   return self.redis:evalsha(
-    mark_area_cell_script,
+    scripts.mark_area_cell,
     '1',
     'A:CELLS:' .. area,
     cell,

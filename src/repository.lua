@@ -24,6 +24,14 @@ end
 local Repository = {}
 local scripts = {}
 
+function Repository:init_pipeline(n)
+  return self.redis:init_pipeline(n)
+end
+
+function Repository:commit_pipeline()
+  return self.redis:commit_pipeline()
+end
+
 -- TILES
 
 function Repository:tiles(xmin, ymin, coords)
@@ -150,7 +158,7 @@ function Repository:add_area_moving_id(area, id)
   self.redis:lpush('A:MOVING:' .. area, id)
 end
 
--- Internal details
+-- internal details
 
 function Repository:all_areas_id(prefix, areas)
   local n = #areas

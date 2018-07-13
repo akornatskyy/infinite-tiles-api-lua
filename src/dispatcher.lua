@@ -113,6 +113,7 @@ function Dispatcher:place(p)
     return self:send_error('Failed to add the object.')
   end
   local lifetime = time() + rand.uniform(10) + 10
+  self.r:init_pipeline(3)
   self.r:set_lifetime(id, lifetime)
   self.r:add_area_object_id(area_code, id)
   self.c:publish(
@@ -128,6 +129,7 @@ function Dispatcher:place(p)
       }
     }
   )
+  self.r:commit_pipeline()
 end
 
 function Dispatcher:move(p)
@@ -152,6 +154,7 @@ function Dispatcher:move(p)
     self.r:unlock_object(id)
     return self:send_error('Unable to acquire area cell for ' .. id .. '.')
   end
+  self.r:init_pipeline(11)
   self.r:mark_area_cell(obj.area, obj.cell, '0')
 
   local ts = time() + 1
@@ -204,6 +207,7 @@ function Dispatcher:move(p)
   end
   self.c:publish(obj.area, e)
   self.r:unlock_object(id)
+  self.r:commit_pipeline()
 end
 
 -- internal details

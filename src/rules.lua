@@ -23,7 +23,22 @@ end
 
 local number = {
   validate = function(self, value, model)
-    if not value or type(value) ~= 'number' then
+    if not value then
+      return 'Required field cannot be left blank.'
+    end
+    if type(value) ~= 'number' then
+      return 'Must be a number value.'
+    end
+    return nil
+  end
+}
+
+local integer = {
+  validate = function(self, value, model)
+    if not value then
+      return 'Required field cannot be left blank.'
+    end
+    if type(value) ~= 'number' or value % 1 ~= 0 then
       return 'Must be an integer value.'
     end
     return nil
@@ -32,5 +47,6 @@ local number = {
 
 return {
   allowed_fields = allowed_fields,
-  number = number
+  number = number,
+  integer = integer
 }

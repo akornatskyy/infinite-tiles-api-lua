@@ -6,9 +6,10 @@ local required = require 'validation.rules.required'
 local rules = require 'rules'
 
 local allowed_fields = rules.allowed_fields
+local integer = rules.integer
 local number = rules.number
 
-local coordinate_rule = {number, range {-100, 100}}
+local coordinate_rule = {integer, range {-100, 100}}
 
 return {
   ping = validator.new {

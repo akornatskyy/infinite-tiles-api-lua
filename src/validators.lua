@@ -6,6 +6,7 @@ local required = require 'validation.rules.required'
 local rules = require 'rules'
 
 local allowed_fields = rules.allowed_fields
+local area = rules.area
 local integer = rules.integer
 local number = rules.number
 
@@ -18,7 +19,7 @@ return {
   },
   tiles = validator.new {
     __ERROR__ = {allowed_fields {'t', 'area', 'ref', 'coords'}},
-    area = {required},
+    area = {required, area},
     ref = {range {min = 0, max = 127}}
   },
   place = validator.new {

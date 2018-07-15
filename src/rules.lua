@@ -45,8 +45,39 @@ local integer = {
   end
 }
 
+local area = {
+  validate = function(self, value, model)
+    if not value or type(value) ~= 'table' then
+      return 'Must be a list value.'
+    end
+    if #value ~= 4 then
+      return 'The list must have exactly four integers.'
+    end
+    for _, n in next, value do
+      if type(n) ~= 'number' or n % 1 ~= 0 then
+        return 'The list must have integers only.'
+      end
+    end
+    local xmin, ymin, dx, dy = unpack(value)
+    if xmin < -100 or xmin > 100 then
+      return 'The xmin must be [-100, 100].'
+    end
+    if ymin < -100 or ymin > 100 then
+      return 'The ymin must be [-100, 100].'
+    end
+    if dx < 0 or dx > 12 then
+      return 'The dx must be [0, 12].'
+    end
+    if dy < 0 or dy > 23 then
+      return 'The dy must be [0, 23].'
+    end
+    return nil
+  end
+}
+
 return {
   allowed_fields = allowed_fields,
-  number = number,
-  integer = integer
+  area = area,
+  integer = integer,
+  number = number
 }

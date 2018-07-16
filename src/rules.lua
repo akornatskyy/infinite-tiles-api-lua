@@ -75,9 +75,37 @@ local area = {
   end
 }
 
+local coords = {
+  validate = function(self, value, model)
+    if not value then
+      return nil
+    end
+    if type(value) ~= 'table' then
+      return 'Must be a list value.'
+    end
+    if #value % 2 ~= 0 then
+      return 'Must include pairs.'
+    end
+    -- 12 * 23 * 2 = 552
+    if #value > 624 then
+      return 'Exceeds maximum length of 624.'
+    end
+    for _, n in next, value do
+      if type(n) ~= 'number' or n % 1 ~= 0 then
+        return 'The list must have integers only.'
+      end
+      if n < 0 or n > 23 then
+        return 'The coords must be relative.'
+      end
+    end
+    return nil
+  end
+}
+
 return {
   allowed_fields = allowed_fields,
   area = area,
+  coords = coords,
   integer = integer,
   number = number
 }

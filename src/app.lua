@@ -1,12 +1,12 @@
 local http = require 'http'
+local websocket = require 'http.middleware.websocket'
 
 local factory = require 'factory'
-local websocket = require 'websocket'
 
 local app = http.app.new {
   websocket = {
-    timeout = 30000 -- in milliseconds
-    -- max_payload_len = 65535
+    timeout = 30000, -- in milliseconds
+    max_payload_len = 1024
   }
 }
 app:use(http.middleware.routing)

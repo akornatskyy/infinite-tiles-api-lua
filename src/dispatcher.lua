@@ -29,6 +29,9 @@ function Dispatcher:dispatch(message)
   if not packet_type then
     return self:send_error('No packet type.')
   end
+  if type(packet_type) ~= 'string' then
+    return self:send_error('Packet type must be a string.')
+  end
   local validator = validators[packet_type]
   if not validator then
     return self:send_error('Unknown packet type [' .. packet_type .. '].')

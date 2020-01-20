@@ -3,8 +3,8 @@
 
 ENV=$(shell pwd)/env
 LUA_VERSION=2.1
-LUAROCKS_VERSION=3.1.3
-NGINX_VERSION=1.17.0
+LUAROCKS_VERSION=3.3.0
+NGINX_VERSION=1.17.8
 NGINX_LUA_MODULE_VERSION=v0.10.14
 
 ifeq (Darwin,$(shell uname -s))
@@ -20,7 +20,7 @@ clean:
 env: luarocks
 	for rock in luasec lbase64 luaossl luasocket struct utf8 lua-cmsgpack \
 			busted cluacov luacheck redis-lua lua-ev lua-websockets ; do \
-		$(ENV)/bin/luarocks --deps-mode=one install $$rock ; \
+		$(ENV)/bin/luarocks install --deps-mode=one $$rock ; \
 	done ; \
 	$(ENV)/bin/luarocks install --server=http://luarocks.org/dev lucid
 

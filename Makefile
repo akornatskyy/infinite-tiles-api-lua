@@ -4,7 +4,7 @@
 ENV=$(shell pwd)/env
 LUA_VERSION=2.1
 LUAROCKS_VERSION=3.4.0
-NGINX_VERSION=1.18.0
+NGINX_VERSION=1.19.5
 NGINX_LUA_MODULE_VERSION=v0.10.13
 
 ifeq (Darwin,$(shell uname -s))
@@ -85,9 +85,9 @@ nginx:
 	mkdir -p lua-nginx-module lua-resty-websocket lua-resty-redis && \
 	wget -c https://github.com/openresty/lua-nginx-module/archive/$(NGINX_LUA_MODULE_VERSION).tar.gz \
 		-O - | tar -xzC lua-nginx-module --strip-components=1 && \
-	wget -c https://github.com/openresty/lua-resty-websocket/archive/v0.07.tar.gz \
+	wget -c https://github.com/openresty/lua-resty-websocket/archive/v0.08.tar.gz \
 		-O - | tar -xzC lua-resty-websocket --strip-components=1 && \
-	wget -c https://github.com/openresty/lua-resty-redis/archive/v0.27.tar.gz \
+	wget -c https://github.com/openresty/lua-resty-redis/archive/v0.29.tar.gz \
 		-O - | tar -xzC lua-resty-redis --strip-components=1 && \
 	\
 	for lib in lua-resty-websocket/lib lua-resty-redis/lib ; do \
